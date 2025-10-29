@@ -14,6 +14,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions: # **تمت الإضافة:** لمنح صلاحيات الكتابة لـ GITHUB_TOKEN
+      contents: write
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
