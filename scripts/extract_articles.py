@@ -18,12 +18,17 @@ def is_title(paragraph):
     نبحث عن أي Style يبدأ بـ 'Heading' أو نتحقق من اسم الـStyle بشكل مباشر.
     """
     # أسماء الـStyles الشائعة للعناوين (الإنجليزية والعربية) بالإضافة إلى الأسماء الأساسية
+    # ***تعديل القائمة لتشمل المزيد من الأسماء العربية***
     title_styles = [
-        'Heading 1', 'Heading 2', 'Title', 'عنوان 1', 'عنوان 2', 'العنوان', 
+        'Heading 1', 'Heading 2', 'Title', 
         'heading 1', 'heading 2', 
         'Heading1', 'Heading2', 'Title', 
-        'Heading', # في بعض الأحيان يكون الاسم مجرد 'Heading'
-        'عناوين' # في بعض الأحيان يكون الاسم مجرد 'عناوين'
+        'Heading', 
+        # الأسماء العربية الموسعة
+        'عنوان 1', 'عنوان 2', 'العنوان', 
+        'عنوان رئيسي', 'عنوان فرعي', 'عنوان المقال', 
+        'عناوين',
+        'عنوان1', 'عنوان2'
     ]
     
     style_name = paragraph.style.name.strip()
@@ -101,7 +106,7 @@ def main():
     
     # رسالة للتحقق: إذا لم يتم حفظ أي ملف، اظهر رسالة خطأ واضحة
     if idx == 1:
-        print("ERROR: No articles were successfully extracted. Check your encyclopedia.docx content format. The current rule relies on paragraph styles starting with 'Heading'.")
+        print("ERROR: No articles were successfully extracted. Check your encyclopedia.docx content format. The current rule relies on paragraph styles starting with 'Heading' or one of the many Arabic/English standard styles.")
 
 if __name__ == "__main__":
     main()
