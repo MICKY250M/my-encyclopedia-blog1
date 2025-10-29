@@ -8,7 +8,8 @@ import pathlib
 import slugify 
 
 # تم تعديل هذا المسار: أصبح يشير مباشرة إلى جذر المستودع
-INPUT = "encyclopedia.docx" 
+# ***التعديل هنا***: تم تغيير اسم الملف إلى "موسوعه 1.docx" ليطابق الملف الذي تم تحميله.
+INPUT = "موسوعه 1.docx" 
 OUTPUT_DIR = "posts"
 
 def is_title(paragraph):
@@ -49,7 +50,7 @@ affiliate: "{{AFFILIATE_LINK}}"
 
 def main():
     if not os.path.exists(INPUT):
-        print(f"Error: Input file {INPUT} not found. Please ensure encyclopedia.docx is in the repository root.")
+        print(f"Error: Input file {INPUT} not found. Please ensure {INPUT} is in the repository root.")
         return
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
