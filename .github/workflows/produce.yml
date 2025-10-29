@@ -23,6 +23,11 @@ jobs:
           # هذا السطر مهم للسماح للـ Action بعمل push للملفات المُنشأة
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Force cleanup of temporary files # **خطوة جديدة تم إضافتها لضمان عدم وجود ملفات مؤقتة**
+        run: |
+          rm -rf posts/
+          rm -f sitemap_*.xml sitemap_index.xml
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
