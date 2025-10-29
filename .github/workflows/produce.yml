@@ -1,56 +1,62 @@
 name: Generate Posts & Sitemaps
 
 on:
-  push:
-    branches:
-      - main  # تأكد من أن هذا هو اسم الفرع الذي تستخدمه (عادةً main)
-    paths:
-      - 'encyclopedia.docx'  # يتم التشغيل عند تحديث الموسوعة في الجذر
-      - 'scripts/**'         # يتم التشغيل عند تحديث أي ملف داخل مجلد scripts
-  schedule:
-    - cron: '0 2 * * *'  # تشغيل يومي عند 02:00 UTC (اختياري)
-  workflow_dispatch: # يسمح بتشغيله يدويًا من واجهة Actions
+  push:
+    branches:
+      - main  # تأكد من أن هذا هو اسم الفرع الذي تستخدمه (عادةً main)
+    paths:
+      - 'encyclopedia.docx'  # يتم التشغيل عند تحديث الموسوعة في الجذر
+      - 'scripts/**'         # يتم التشغيل عند تحديث أي ملف داخل مجلد scripts
+  schedule:
+    - cron: '0 2 * * *'  # تشغيل يومي عند 02:00 UTC (اختياري)
+  workflow_dispatch: # يسمح بتشغيله يدويًا من واجهة Actions
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-        with:
-          # هذا السطر مهم للسماح للـ Action بعمل push للملفات المُنشأة
-          token: ${{ secrets.GITHUB_TOKEN }}
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          # هذا السطر مهم للسماح للـ Action بعمل push للملفات المُنشأة
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
 
-      - name: Install dependencies
-        run: |
-          # تثبيت المكتبات اللازمة لـ python-docx و python-slugify
-          python -m pip install --upgrade pip
-          pip install python-docx python-slugify
+      - name: Install dependencies
+        run: |
+          # تثبيت المكتبات اللازمة لـ python-docx و python-slugify
+          python -m pip install --upgrade pip
+          pip install python-docx python-slugify
 
-      - name: Run extractor
-        run: |
-          # تشغيل سكربت استخراج المقالات
-          python scripts/extract_articles.py
+      - name: Extract, Generate Sitemaps, and Commit Changes
+        run: |
+          # 1. تشغيل سكربت استخراج المقالات
+          python scripts/extract_articles.py
 
-      - name: Generate sitemaps
-        run: |
-          # تشغيل سكربت توليد خرائط الموقع
-          python scripts/generate_sitemaps.py
-          
-      - name: Commit and Push generated posts
-        run: |
-          # إعداد معلومات المستخدم للـ commit التلقائي
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          
-          # إضافة الملفات المُنشأة (posts/ والمحتوى المُنشأ من Sitemaps)
-          # || true لتجنب فشل الأمر إذا لم توجد أي ملفات sitemap موجودة مسبقًا
-          git add posts/ sitemap_*.xml sitemap_index.xml || true 
-          
-          # محاولة الـ commit والـ push، يتم التخطي إذا لم يكن هناك تغيير
-          git diff --quiet --exit-code || (git commit -m "Auto-generate posts & sitemaps" && git push)
+          # 2. تشغيل سكربت توليد خرائط الموقع
+          python scripts/generate_sitemaps.py
+          
+          # 3. إعداد Git للمزامنة والإرسال القسري (لحل مشكلة عدم ظهور المجلد)
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          
+          # إضافة الملفات والمجلدات المُنشأة (posts/ وملفات sitemaps)
+          git add posts/
+          git add sitemap_*.xml
+          git add sitemap_index.xml
+
+          # 4. التحقق من وجود تغييرات لـ Commit (لتجنب فشل الـ workflow)
+          # إذا كان هناك فرق (تغيير)، قم بالـ commit والـ push
+          if git status --porcelain | grep -q .; then
+            echo "Changes detected. Committing and pushing..."
+            git commit -m "Auto-generate posts & sitemaps"
+            git push
+          else
+            echo "No changes in posts/ or sitemaps. Skipping commit."
+          fi
+
+# تم حذف الخطوات القديمة (Run extractor, Generate sitemaps, Commit and Push) ودمجها في الخطوة أعلاه.
