@@ -23,7 +23,7 @@ def save_post(title, body, idx):
     
     # السطر 25 المُسبب للمشكلة - تم تنظيفه تمامًا
 meta = f"---\ntitle: \"{title.replace('"', '\\"')}\"\ntags: []\naffiliate: \"{{AFFILIATE_LINK}}\"\n---\n\n"
-    with open(path, "w", encoding="utf-8") as f:
+with open(path, "w", encoding="utf-8") as f:
         f.write(meta + body.strip() + "\n")
     print("Saved:", path)
 
