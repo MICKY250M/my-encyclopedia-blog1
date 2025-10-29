@@ -8,26 +8,35 @@ import pathlib
 import slugify 
 
 # تم تعديل هذا المسار: أصبح يشير مباشرة إلى جذر المستودع
-# ***التعديل الجديد***: تم تغيير اسم الملف من "موسوعه 1.docx" إلى "encyclopedia.docx" بناءً على طلب المستخدم.
+# ***التعديل الجديد***: تم تغيير اسم الملف إلى "encyclopedia.docx" بناءً على طلب المستخدم.
 INPUT = "encyclopedia.docx" 
 OUTPUT_DIR = "posts"
 
 def is_title(paragraph):
     """
     تحدد ما إذا كانت الفقرة عنوانًا محتملاً بناءً على Style الوورد.
-    نبحث عن Styles "Heading 1" أو "Heading 2" أو ما يعادلها باللغة العربية.
+    نبحث عن أي Style يبدأ بـ 'Heading' أو نتحقق من اسم الـStyle بشكل مباشر.
     """
-    # أسماء الـStyles الشائعة للعناوين (الإنجليزية والعربية) بالإضافة إلى الأسماء الأساسية (بدون مسافة)
+    # أسماء الـStyles الشائعة للعناوين (الإنجليزية والعربية) بالإضافة إلى الأسماء الأساسية
     title_styles = [
         'Heading 1', 'Heading 2', 'Title', 'عنوان 1', 'عنوان 2', 'العنوان', 
         'heading 1', 'heading 2', 
-        # إضافة الأسماء الأساسية التي تستخدمها python-docx داخليًا
-        'Heading1', 'Heading2', 'Title'
+        'Heading1', 'Heading2', 'Title', 
+        'Heading', # في بعض الأحيان يكون الاسم مجرد 'Heading'
+        'عناوين' # في بعض الأحيان يكون الاسم مجرد 'عناوين'
     ]
     
-    # التحقق من أن الـStyle الخاص بالفقرة موجود ضمن قائمة العناوين
     style_name = paragraph.style.name.strip()
-    return style_name in title_styles and paragraph.text.strip() != ""
+    
+    # 1. التحقق من أن الـStyle يبدأ بـ 'Heading' (الطريقة الأكثر موثوقية)
+    if style_name.startswith('Heading'):
+        return paragraph.text.strip() != ""
+        
+    # 2. التحقق من المطابقة التامة للأسماء المعروفة (كخيار احتياطي)
+    if style_name in title_styles:
+        return paragraph.text.strip() != ""
+        
+    return False
 
 def save_post(title, body, idx):
     """
@@ -59,7 +68,12 @@ def main():
         return
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    doc = Document(INPUT)
+    try:
+        doc = Document(INPUT)
+    except Exception as e:
+        print(f"ERROR: Failed to open document {INPUT}. Details: {e}")
+        return
+        
     current_title = None
     current_body = ""
     idx = 1
@@ -72,7 +86,6 @@ def main():
         # نمرر كائن الفقرة p للدالة is_title بدلاً من النص فقط
         if is_title(p):
             # إذا كان لدينا مقال سابق نحفظه قبل بدء مقال جديد
-            # نتحقق فقط من وجود محتوى غير فارغ (تم إزالة شرط الـ 50 حرفاً)
             if current_title and current_body.strip():
                 save_post(current_title, current_body, idx)
                 idx += 1
@@ -88,7 +101,7 @@ def main():
     
     # رسالة للتحقق: إذا لم يتم حفظ أي ملف، اظهر رسالة خطأ واضحة
     if idx == 1:
-        print("ERROR: No articles were successfully extracted. Check your encyclopedia.docx content format. The current rule relies on paragraph styles (Heading 1/2, Heading1/2).")
+        print("ERROR: No articles were successfully extracted. Check your encyclopedia.docx content format. The current rule relies on paragraph styles starting with 'Heading'.")
 
 if __name__ == "__main__":
     main()
