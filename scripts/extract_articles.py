@@ -13,14 +13,13 @@ OUTPUT_DIR = "posts"
 
 def is_title(paragraph_text):
     """
-    تحدد ما إذا كانت الفقرة عنوانًا محتملاً بناءً على طول الكلمات والأحرف.
-    نستخدم قاعدة متساهلة هنا لأن أنماط الوورد قد تكون غير موحدة.
-    (تعديل نهائي: نزيد الحد الأقصى لاستيعاب العناوين الطويلة)
+    تحدد ما إذا كانت الفقرة عنوانًا محتملاً بناءً على طول الكلمات.
+    ***الحل النهائي: نستخدم قاعدة متساهلة جداً (أقل من 40 كلمة) لضمان التقاط العناوين مهما كان طولها.***
     """
     word_count = len(paragraph_text.split())
-    # يعتبر عنوانًا إذا كان بين 2 و 30 كلمة، وطوله أقل من 200 حرف.
-    # هذا يضمن التقاط العناوين الطويلة جداً مع تجاهل الفقرات الكاملة.
-    return 2 <= word_count <= 30 and len(paragraph_text) < 200
+    # يعتبر عنوانًا إذا كان بين 2 و 40 كلمة. هذا يضمن التقاط العناوين الطويلة جداً
+    # مع تجاهل الفقرات الكاملة التي تتجاوز الـ 40 كلمة (وهو أمر نادر).
+    return 2 <= word_count <= 40
 
 def save_post(title, body, idx):
     """
@@ -82,7 +81,7 @@ def main():
     
     # رسالة للتحقق: إذا لم يتم حفظ أي ملف، اظهر رسالة خطأ واضحة
     if idx == 1:
-        print("ERROR: No articles were successfully extracted. Check your encyclopedia.docx content format. The current rule is 2-30 words and less than 200 characters.")
+        print("ERROR: No articles were successfully extracted. Check your encyclopedia.docx content format. The current rule is 2-40 words.")
 
 if __name__ == "__main__":
     main()
