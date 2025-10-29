@@ -13,32 +13,31 @@ OUTPUT_DIR = "posts"
 
 def is_title(paragraph):
     """
-    تحدد ما إذا كانت الفقرة عنوانًا محتملاً بناءً على Style الوورد.
-    نبحث عن أي Style يبدأ بـ 'Heading' أو نتحقق من اسم الـStyle بشكل مباشر.
+    تحدد ما إذا كانت الفقرة عنوانًا محتملاً بناءً على طول الفقرة ووجود خط غامق (Bold).
+    يُستخدم هذا المنطق عندما يكون الـStyle هو 'Normal' فقط.
     """
-    # أسماء الـStyles الشائعة للعناوين (الإنجليزية والعربية) بالإضافة إلى الأسماء الأساسية
-    # ***قائمة مرنة وموسعة للأسماء العربية والإنجليزية***
-    title_styles = [
-        'Heading 1', 'Heading 2', 'Title', 
-        'heading 1', 'heading 2', 
-        'Heading1', 'Heading2', 'Title', 
-        'Heading', 
-        # الأسماء العربية الموسعة
-        'عنوان 1', 'عنوان 2', 'العنوان', 
-        'عنوان رئيسي', 'عنوان فرعي', 'عنوان المقال', 
-        'عناوين',
-        'عنوان1', 'عنوان2'
-    ]
-    
-    style_name = paragraph.style.name.strip()
-    
-    # 1. التحقق من أن الـStyle يبدأ بـ 'Heading' (الطريقة الأكثر موثوقية)
-    if style_name.startswith('Heading'):
-        return paragraph.text.strip() != ""
+    text = paragraph.text.strip()
+    if not text:
+        return False
         
-    # 2. التحقق من المطابقة التامة للأسماء المعروفة (كخيار احتياطي)
-    if style_name in title_styles:
-        return paragraph.text.strip() != ""
+    word_count = len(text.split())
+    
+    # 1. العنوان يجب أن يكون قصيراً جداً (أقل من 10 كلمات)
+    if word_count > 10:
+        return False
+        
+    # 2. التحقق من وجود تنسيق Bold في الفقرة. 
+    # غالباً ما يتم تمييز العناوين بالخط الغامق حتى لو كان الـStyle هو 'Normal'.
+    is_bold = False
+    for run in paragraph.runs:
+        if run.bold:
+            is_bold = True
+            break
+            
+    # إذا كان النص قصيراً جداً وأي جزء منه غامق، نعتبره عنواناً.
+    # أو إذا كان نصيراً جداً وينتهي بنقطتين (نمط الترقيم في الموسوعات).
+    if is_bold or text.endswith(':') or text.endswith(':'):
+        return True
         
     return False
 
@@ -82,14 +81,13 @@ def main():
     current_body = ""
     idx = 1
     
-    # *** المنطق الجديد: الاعتماد على is_title لتحديد بداية كل مقال ***
+    # المنطق البديل: الاعتماد على is_title (طول الفقرة + غامق/نقطتين) لتحديد بداية كل مقال 
 
     for p in doc.paragraphs:
         text = p.text.strip()
         if not text:
             continue
             
-        # إذا كانت الفقرة عنواناً بناءً على أي من القواعد المرنة
         if is_title(p):
             # 1. إذا كان لدينا مقال سابق نحفظه قبل بدء مقال جديد
             if current_title and current_body.strip():
@@ -108,8 +106,7 @@ def main():
     
     # رسالة للتحقق: إذا لم يتم حفظ أي ملف، اظهر رسالة خطأ واضحة
     if idx == 1:
-        # رسالة الخطأ هنا تعني أن *is_title* فشلت في تحديد أي عنوان على الإطلاق.
-        print("ERROR: No articles were successfully extracted. This suggests that the styles used in encyclopedia.docx are non-standard. Please ensure all article titles use one of the standard 'Heading' styles in Microsoft Word.")
+        print("ERROR: No articles were successfully extracted. This suggests that the titles are not bolded or they contain more than 10 words.")
 
 if __name__ == "__main__":
     main()
