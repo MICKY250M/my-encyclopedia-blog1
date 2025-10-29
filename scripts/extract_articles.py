@@ -11,15 +11,17 @@ import slugify
 INPUT = "encyclopedia.docx" 
 OUTPUT_DIR = "posts"
 
-def is_title(paragraph_text):
+def is_title(paragraph):
     """
-    تحدد ما إذا كانت الفقرة عنوانًا محتملاً بناءً على طول الكلمات.
-    ***الحل النهائي: نستخدم قاعدة متساهلة جداً (أقل من 40 كلمة) لضمان التقاط العناوين مهما كان طولها.***
+    تحدد ما إذا كانت الفقرة عنوانًا محتملاً بناءً على Style الوورد.
+    نبحث عن Styles "Heading 1" أو "Heading 2" أو ما يعادلها باللغة العربية.
     """
-    word_count = len(paragraph_text.split())
-    # يعتبر عنوانًا إذا كان بين 2 و 40 كلمة. هذا يضمن التقاط العناوين الطويلة جداً
-    # مع تجاهل الفقرات الكاملة التي تتجاوز الـ 40 كلمة (وهو أمر نادر).
-    return 2 <= word_count <= 40
+    # أسماء الـStyles الشائعة للعناوين (الإنجليزية والعربية)
+    title_styles = ['Heading 1', 'Heading 2', 'Title', 'عنوان 1', 'عنوان 2', 'العنوان', 'heading 1', 'heading 2']
+    
+    # التحقق من أن الـStyle الخاص بالفقرة موجود ضمن قائمة العناوين
+    style_name = paragraph.style.name.strip()
+    return style_name in title_styles and paragraph.text.strip() != ""
 
 def save_post(title, body, idx):
     """
@@ -31,7 +33,6 @@ def save_post(title, body, idx):
     path = os.path.join(OUTPUT_DIR, filename)
     
     # الحل الجذري: استخدام ثلاث علامات اقتباس لتفادي مشاكل الهروب (\)
-    # نقوم بتنظيف العنوان من أي علامات اقتباس داخليًا قبل وضعه في القالب
     clean_title = title.replace('"', "'") # نستبدل "" بـ ' لتفادي التعارض مع تنسيق YAML
     
     meta = f"""---
@@ -62,10 +63,11 @@ def main():
         if not text:
             continue
             
-        if is_title(text):
+        # نمرر كائن الفقرة p للدالة is_title بدلاً من النص فقط
+        if is_title(p):
             # إذا كان لدينا مقال سابق نحفظه قبل بدء مقال جديد
-            # تم إزالة شرط طول المقال (50 حرفاً) لضمان حفظ كل شيء يتم التقاطه
-            if current_title and current_body.strip(): # نتحقق فقط من وجود محتوى غير فارغ
+            # نتحقق فقط من وجود محتوى غير فارغ (تم إزالة شرط الـ 50 حرفاً)
+            if current_title and current_body.strip():
                 save_post(current_title, current_body, idx)
                 idx += 1
             current_title = text
@@ -75,13 +77,12 @@ def main():
             current_body += text + "\n\n"
 
     # حفظ آخر مقال بعد الانتهاء من الوثيقة
-    # تم إزالة شرط طول المقال (50 حرفاً) هنا أيضاً
     if current_title and current_body.strip():
         save_post(current_title, current_body, idx)
     
     # رسالة للتحقق: إذا لم يتم حفظ أي ملف، اظهر رسالة خطأ واضحة
     if idx == 1:
-        print("ERROR: No articles were successfully extracted. Check your encyclopedia.docx content format. The current rule is 2-40 words.")
+        print("ERROR: No articles were successfully extracted. Check your encyclopedia.docx content format. The current rule relies on paragraph styles (Heading 1/2).")
 
 if __name__ == "__main__":
     main()
