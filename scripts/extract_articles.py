@@ -8,8 +8,8 @@ import pathlib
 import slugify 
 
 # تم تعديل هذا المسار: أصبح يشير مباشرة إلى جذر المستودع
-# ***التعديل هنا***: تم تغيير اسم الملف إلى "موسوعه 1.docx" ليطابق الملف الذي تم تحميله.
-INPUT = "موسوعه 1.docx" 
+# ***التعديل الجديد***: تم تغيير اسم الملف من "موسوعه 1.docx" إلى "encyclopedia.docx" بناءً على طلب المستخدم.
+INPUT = "encyclopedia.docx" 
 OUTPUT_DIR = "posts"
 
 def is_title(paragraph):
@@ -17,8 +17,13 @@ def is_title(paragraph):
     تحدد ما إذا كانت الفقرة عنوانًا محتملاً بناءً على Style الوورد.
     نبحث عن Styles "Heading 1" أو "Heading 2" أو ما يعادلها باللغة العربية.
     """
-    # أسماء الـStyles الشائعة للعناوين (الإنجليزية والعربية)
-    title_styles = ['Heading 1', 'Heading 2', 'Title', 'عنوان 1', 'عنوان 2', 'العنوان', 'heading 1', 'heading 2']
+    # أسماء الـStyles الشائعة للعناوين (الإنجليزية والعربية) بالإضافة إلى الأسماء الأساسية (بدون مسافة)
+    title_styles = [
+        'Heading 1', 'Heading 2', 'Title', 'عنوان 1', 'عنوان 2', 'العنوان', 
+        'heading 1', 'heading 2', 
+        # إضافة الأسماء الأساسية التي تستخدمها python-docx داخليًا
+        'Heading1', 'Heading2', 'Title'
+    ]
     
     # التحقق من أن الـStyle الخاص بالفقرة موجود ضمن قائمة العناوين
     style_name = paragraph.style.name.strip()
@@ -83,7 +88,7 @@ def main():
     
     # رسالة للتحقق: إذا لم يتم حفظ أي ملف، اظهر رسالة خطأ واضحة
     if idx == 1:
-        print("ERROR: No articles were successfully extracted. Check your encyclopedia.docx content format. The current rule relies on paragraph styles (Heading 1/2).")
+        print("ERROR: No articles were successfully extracted. Check your encyclopedia.docx content format. The current rule relies on paragraph styles (Heading 1/2, Heading1/2).")
 
 if __name__ == "__main__":
     main()
