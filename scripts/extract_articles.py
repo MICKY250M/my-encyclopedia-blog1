@@ -12,8 +12,13 @@ INPUT = "encyclopedia.docx"
 OUTPUT_DIR = "posts"
 
 def is_title(paragraph_text):
-    # قاعدة بسيطة: يعتبر الفقرة عنوانًا إن عدد كلماتها بين 3 و12 وهي الفقرة نفسها بدون مسافات إضافية
-    return 3 <= len(paragraph_text.split()) <= 12 and paragraph_text.strip() == paragraph_text
+    # القاعدة الجديدة: إذا كان طول السطر أقل من 100 حرف وكان يحتوي على 10 كلمات أو أقل، اعتبره عنوانًا.
+    # هذا يسمح بعناوين أطول قليلاً ويتجاهل محتوى النص الطويل.
+    word_count = len(paragraph_text.split())
+    char_count = len(paragraph_text)
+    
+    # يجب أن يكون السطر موجودًا (أكثر من كلمتين) وأقل من 10 كلمات وأقل من 100 حرف
+    return 3 <= word_count <= 10 and char_count <= 100
 
 def save_post(title, body, idx):
     # استخدام slugify لتنظيف العنوان لاسم ملف
