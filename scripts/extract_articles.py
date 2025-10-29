@@ -64,8 +64,8 @@ def main():
             
         if is_title(text):
             # إذا كان لدينا مقال سابق نحفظه قبل بدء مقال جديد
-            # شرط الحفظ: يجب أن يكون لدينا عنوان وجسم مقال يتجاوز 50 حرفًا (للتأكد من أنه ليس عنوان مكرر أو فقرة قصيرة جدًا)
-            if current_title and len(current_body.strip()) > 50:
+            # تم إزالة شرط طول المقال (50 حرفاً) لضمان حفظ كل شيء يتم التقاطه
+            if current_title and current_body.strip(): # نتحقق فقط من وجود محتوى غير فارغ
                 save_post(current_title, current_body, idx)
                 idx += 1
             current_title = text
@@ -75,8 +75,8 @@ def main():
             current_body += text + "\n\n"
 
     # حفظ آخر مقال بعد الانتهاء من الوثيقة
-    # نستخدم شرط > 50 حرفًا مرة أخرى
-    if current_title and len(current_body.strip()) > 50:
+    # تم إزالة شرط طول المقال (50 حرفاً) هنا أيضاً
+    if current_title and current_body.strip():
         save_post(current_title, current_body, idx)
     
     # رسالة للتحقق: إذا لم يتم حفظ أي ملف، اظهر رسالة خطأ واضحة
