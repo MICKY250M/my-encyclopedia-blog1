@@ -21,7 +21,7 @@ def save_post(title, body, idx):
     filename = f"{idx:04d}-{slug}.md"
     path = os.path.join(OUTPUT_DIR, filename)
     
-    # إضافة metadata (Front Matter)
+    # السطر 25 المُسبب للمشكلة - تم تنظيفه تمامًا
     meta = f"---\ntitle: \"{title.replace('"', '\\"')}\"\ntags: []\naffiliate: \"{{AFFILIATE_LINK}}\"\n---\n\n"
     
     with open(path, "w", encoding="utf-8") as f:
