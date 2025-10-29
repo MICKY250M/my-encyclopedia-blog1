@@ -12,16 +12,19 @@ INPUT = "encyclopedia.docx"
 OUTPUT_DIR = "posts"
 
 def is_title(paragraph_text):
-    # القاعدة الأكثر تساهلاً: يعتبر عنوانًا إذا كان أقل من 20 كلمة وليس سطرًا فارغًا.
+    """
+    تحدد ما إذا كانت الفقرة عنوانًا محتملاً بناءً على طول الكلمات والأحرف.
+    نستخدم قاعدة متساهلة هنا لأن أنماط الوورد قد تكون غير موحدة.
+    """
     word_count = len(paragraph_text.split())
-    # إذا كان السطر بين 1 و 20 كلمة، سنعتبره عنوانًا محتملاً. 
-    # هذا يقلل من فرصة اعتبار الفقرات الطويلة كعناوين.
-    return 1 < word_count <= 20 and len(paragraph_text) < 150
-    
-    # يجب أن يكون السطر موجودًا (أكثر من كلمتين) وأقل من 10 كلمات وأقل من 100 حرف
-    return 3 <= word_count <= 10 and char_count <= 100
+    # يعتبر عنوانًا إذا كان بين 2 و 20 كلمة، وطوله أقل من 150 حرفًا.
+    # هذا يتجنب الفقرات الطويلة (جسم النص).
+    return 2 <= word_count <= 20 and len(paragraph_text) < 150
 
 def save_post(title, body, idx):
+    """
+    يحفظ المقال كملف Markdown مع إضافة Front Matter.
+    """
     # استخدام slugify لتنظيف العنوان لاسم ملف
     slug = slugify.slugify(title)[:80]
     filename = f"{idx:04d}-{slug}.md"
@@ -61,7 +64,8 @@ def main():
             
         if is_title(text):
             # إذا كان لدينا مقال سابق نحفظه قبل بدء مقال جديد
-            if current_title and current_body:
+            # شرط الحفظ: يجب أن يكون لدينا عنوان وجسم مقال يتجاوز 50 حرفًا (للتأكد من أنه ليس عنوان مكرر أو فقرة قصيرة جدًا)
+            if current_title and len(current_body.strip()) > 50:
                 save_post(current_title, current_body, idx)
                 idx += 1
             current_title = text
@@ -71,8 +75,13 @@ def main():
             current_body += text + "\n\n"
 
     # حفظ آخر مقال بعد الانتهاء من الوثيقة
-    if current_title and current_body:
+    # نستخدم شرط > 50 حرفًا مرة أخرى
+    if current_title and len(current_body.strip()) > 50:
         save_post(current_title, current_body, idx)
+    
+    # رسالة للتحقق: إذا لم يتم حفظ أي ملف، اظهر رسالة خطأ واضحة
+    if idx == 1:
+        print("ERROR: No articles were successfully extracted. Check your encyclopedia.docx content format.")
 
 if __name__ == "__main__":
     main()
