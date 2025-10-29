@@ -21,9 +21,19 @@ def save_post(title, body, idx):
     filename = f"{idx:04d}-{slug}.md"
     path = os.path.join(OUTPUT_DIR, filename)
     
-    # السطر 25 المُسبب للمشكلة - تم تنظيفه تمامًا
-meta = f"---\ntitle: \"{title.replace('"', '\\"')}\"\ntags: []\naffiliate: \"{{AFFILIATE_LINK}}\"\n---\n\n"
-with open(path, "w", encoding="utf-8") as f:
+    # الحل الجذري: استخدام ثلاث علامات اقتباس لتفادي مشاكل الهروب (\)
+    # نقوم بتنظيف العنوان من أي علامات اقتباس داخليًا قبل وضعه في القالب
+    clean_title = title.replace('"', "'") # نستبدل "" بـ ' لتفادي التعارض مع تنسيق YAML
+    
+    meta = f"""---
+title: "{clean_title}"
+tags: []
+affiliate: "{{AFFILIATE_LINK}}"
+---
+
+"""
+    
+    with open(path, "w", encoding="utf-8") as f:
         f.write(meta + body.strip() + "\n")
     print("Saved:", path)
 
