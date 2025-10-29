@@ -8,7 +8,6 @@ import pathlib
 import slugify 
 
 # تم تعديل هذا المسار: أصبح يشير مباشرة إلى جذر المستودع
-# ***التعديل الجديد***: تم تغيير اسم الملف إلى "encyclopedia.docx" بناءً على طلب المستخدم.
 INPUT = "encyclopedia.docx" 
 OUTPUT_DIR = "posts"
 
@@ -18,7 +17,7 @@ def is_title(paragraph):
     نبحث عن أي Style يبدأ بـ 'Heading' أو نتحقق من اسم الـStyle بشكل مباشر.
     """
     # أسماء الـStyles الشائعة للعناوين (الإنجليزية والعربية) بالإضافة إلى الأسماء الأساسية
-    # ***تعديل القائمة لتشمل المزيد من الأسماء العربية***
+    # ***قائمة مرنة وموسعة للأسماء العربية والإنجليزية***
     title_styles = [
         'Heading 1', 'Heading 2', 'Title', 
         'heading 1', 'heading 2', 
@@ -82,18 +81,21 @@ def main():
     current_title = None
     current_body = ""
     idx = 1
+    
+    # *** المنطق الجديد: الاعتماد على is_title لتحديد بداية كل مقال ***
 
     for p in doc.paragraphs:
         text = p.text.strip()
         if not text:
             continue
             
-        # نمرر كائن الفقرة p للدالة is_title بدلاً من النص فقط
+        # إذا كانت الفقرة عنواناً بناءً على أي من القواعد المرنة
         if is_title(p):
-            # إذا كان لدينا مقال سابق نحفظه قبل بدء مقال جديد
+            # 1. إذا كان لدينا مقال سابق نحفظه قبل بدء مقال جديد
             if current_title and current_body.strip():
                 save_post(current_title, current_body, idx)
                 idx += 1
+            # 2. نبدأ مقالاً جديداً بعنوان هذه الفقرة
             current_title = text
             current_body = ""
         else:
@@ -106,7 +108,8 @@ def main():
     
     # رسالة للتحقق: إذا لم يتم حفظ أي ملف، اظهر رسالة خطأ واضحة
     if idx == 1:
-        print("ERROR: No articles were successfully extracted. Check your encyclopedia.docx content format. The current rule relies on paragraph styles starting with 'Heading' or one of the many Arabic/English standard styles.")
+        # رسالة الخطأ هنا تعني أن *is_title* فشلت في تحديد أي عنوان على الإطلاق.
+        print("ERROR: No articles were successfully extracted. This suggests that the styles used in encyclopedia.docx are non-standard. Please ensure all article titles use one of the standard 'Heading' styles in Microsoft Word.")
 
 if __name__ == "__main__":
     main()
